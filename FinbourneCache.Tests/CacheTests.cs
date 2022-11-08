@@ -32,7 +32,16 @@ namespace FinbourneCache.Tests
         {
             var cache = new Cache<int, int>();
             cache.Add(1, 2);
-            cache.Get(1);
+            var cacheItem = cache.Get(1);
+            Assert.AreEqual(2, cacheItem.Value);
+        }
+
+        [TestMethod]
+        public void Get_ItemDoesntExist_ShouldReturnNull()
+        {
+            var cache = new Cache<int, int>();
+            var item = cache.Get(1);
+            Assert.IsNull(item);
         }
 
         #endregion

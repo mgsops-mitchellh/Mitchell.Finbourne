@@ -26,8 +26,8 @@ namespace FinbourneCache
             // Reference case
             return other == this ||
                 // Value cases
-                (other is CacheItem<T> && ((CacheItem<T>) other).Value.Equals(this.Value) ||
-                (other is T) && other.Equals(this.Value));
+                (other is CacheItem<T> && ((CacheItem<T>)other).Value.Equals(this.Value) ||
+                ((other is T) && other.Equals(this.Value)));
         }
     }
 }

@@ -21,7 +21,8 @@ namespace FinbourneCache
 
         public CacheItem<TValue> Get(TKey key)
         {
-            return CacheItems[key];
+            CacheItems.TryGetValue(key, out var cacheItem);
+            return cacheItem;
         }
     }
 }
