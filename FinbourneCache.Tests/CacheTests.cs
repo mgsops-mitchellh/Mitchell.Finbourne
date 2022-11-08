@@ -45,5 +45,32 @@ namespace FinbourneCache.Tests
         }
 
         #endregion
+
+        #region Adding / Reading with capacity limits
+
+        [TestMethod]
+        public void AddItemsUnderCapacity_CanAddAndRead()
+        {
+            var cache = new Cache<int, int>(2);
+            cache.Add(1, 1);
+            cache.Add(2, 2);
+            Assert.AreEqual(cache.Get(1).Value, 1);
+            Assert.AreEqual(cache.Get(2).Value, 2);
+
+        }
+
+        [TestMethod]
+        public void AddItemsOverCapacity_ShouldReturnNullForLRUItem()
+        {
+            var cache = new Cache<int, int>(2);
+            cache.Add(1, 1);
+            cache.Add(2, 2);
+            cache.Add(3, 3);
+            Assert.IsNull(cache.Get(1));
+            Assert.AreEqual(cache.Get(2).Value, 2);
+            Assert.AreEqual(cache.Get(3).Value, 3);
+        }
+
+        #endregion
     }
 }
