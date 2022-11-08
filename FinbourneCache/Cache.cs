@@ -1,15 +1,27 @@
-﻿namespace FinbourneCache
+﻿using System.Data.SqlTypes;
+
+namespace FinbourneCache
 {
-    public class Cache<TKey, TValue> : ICache<TKey, TValue> where TKey : IComparable, IComparable<TKey>
+    public class Cache<TKey, TValue> : ICache<TKey, TValue>
     {
+        private Dictionary<TKey, CacheItem<TValue>> CacheItems = new Dictionary<TKey, CacheItem<TValue>>();
+
         public void Add(TKey key, TValue value)
         {
-            throw new NotImplementedException();
+            var cacheItem = new CacheItem<TValue>(value);
+            if (CacheItems.ContainsKey(key))
+            {
+                CacheItems[key] = cacheItem;
+            }
+            else
+            {
+                CacheItems.Add(key, cacheItem);
+            }
         }
 
-        public TValue Get(TKey key)
+        public CacheItem<TValue> Get(TKey key)
         {
-            throw new NotImplementedException();
+            return CacheItems[key];
         }
     }
 }
