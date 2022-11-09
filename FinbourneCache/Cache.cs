@@ -1,6 +1,4 @@
-﻿using System.Data.SqlTypes;
-
-namespace FinbourneCache
+﻿namespace FinbourneCache
 {
     public class Cache<TKey, TValue> : ICache<TKey, TValue>
     {
