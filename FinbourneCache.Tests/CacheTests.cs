@@ -71,6 +71,28 @@ namespace FinbourneCache.Tests
             Assert.AreEqual(cache.Get(3).Value, 3);
         }
 
+        [TestMethod]
+        public void AddItemsUnderCapacityWithExpiredItem_ShouldReturnNull()
+        {
+            var cache = new Cache<int, int>(2);
+            cache.Add(1, 1, out var removedItem1);
+            cache.Add(2, 2, out var removedItem2);
+
+            Assert.IsNull(removedItem1);
+            Assert.IsNull(removedItem2);
+        }
+
+        [TestMethod]
+        public void AddItemsOverCapacityWithExpiredItem_ShouldReturnRemovedItem()
+        {
+            var cache = new Cache<int, int>(2);
+            cache.Add(1, 1);
+            cache.Add(2, 2);
+            cache.Add(3, 3, out var removedItem);
+
+            Assert.AreEqual(removedItem.Value, 1);
+        }
+
         #endregion
     }
 }

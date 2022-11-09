@@ -4,7 +4,7 @@ namespace FinbourneCache
 {
     public class Cache<TKey, TValue> : ICache<TKey, TValue>
     {
-        private Dictionary<TKey, CacheItem<TValue>> CacheItems = new Dictionary<TKey, CacheItem<TValue>>();
+        private Dictionary<TKey, CacheItem<TValue>> _cacheItems = new Dictionary<TKey, CacheItem<TValue>>();
         private LinkedList<TKey> lruTracker = new LinkedList<TKey>();
 
         private readonly int _capacity;
@@ -16,17 +16,24 @@ namespace FinbourneCache
 
         public void Add(TKey key, TValue value)
         {
+            this.Add(key, value, out var _);
+        }
+
+        public void Add(TKey key, TValue value, out CacheItem<TValue> expiredItem)
+        {
+            expiredItem = null;
+
             if (key == null) return;
 
             var cacheItem = new CacheItem<TValue>(value);
-            if (CacheItems.TryGetValue(key, out var existingItem))
+            if (_cacheItems.TryGetValue(key, out var existingItem))
             {
-                if (!existingItem.Equals(cacheItem)) CacheItems[key] = cacheItem;
+                if (!existingItem.Equals(cacheItem)) _cacheItems[key] = cacheItem;
                 lruTracker.Remove(key);
             }
             else
             {
-                CacheItems.Add(key, cacheItem);
+                _cacheItems.Add(key, cacheItem);
             }
             lruTracker.AddLast(key);
 
@@ -34,13 +41,14 @@ namespace FinbourneCache
             {
                 var keyToRemove = lruTracker.First.Value;
                 lruTracker.RemoveFirst();
-                CacheItems.Remove(keyToRemove);
+                expiredItem = _cacheItems[keyToRemove];
+                _cacheItems.Remove(keyToRemove);
             }
         }
 
         public CacheItem<TValue> Get(TKey key)
         {
-            CacheItems.TryGetValue(key, out var cacheItem);
+            _cacheItems.TryGetValue(key, out var cacheItem);
             return cacheItem;
         }
     }
