@@ -12,4 +12,4 @@ Implementation of an in-memory cache to add and retrieve items written in .net6.
 - Extract a class that takes care of the locking operations.
 - Implement logging to see if any errors occur.
 - Implement further unit testing around the locking operations, could be done if this was an injected dependency as mentioned above.
-- 
+- Add atomic operations such as the unit of work pattern, where we could fall into a situation of the item being added into the cache but the LRU tracker not updated
