@@ -3,8 +3,8 @@
     public class Cache<TKey, TValue> : ICache<TKey, TValue>
     {
         private Dictionary<TKey, CacheItem<TValue>> _cacheItems = new Dictionary<TKey, CacheItem<TValue>>();
-        private LinkedList<TKey> lruTracker = new LinkedList<TKey>();
-
+        private LinkedList<TKey> _lruTracker = new LinkedList<TKey>();
+        private object _lockOperation = new object();
         private readonly int _capacity;
 
         public Cache(int capacity = 1024)
@@ -17,37 +17,61 @@
             this.Add(key, value, out var _);
         }
 
-        public void Add(TKey key, TValue value, out CacheItem<TValue> expiredItem)
+        public void Add(TKey key, TValue value, out CacheItem<TValue> removedItem)
         {
-            expiredItem = null;
+            removedItem = null;
 
             if (key == null) return;
 
             var cacheItem = new CacheItem<TValue>(value);
-            if (_cacheItems.TryGetValue(key, out var existingItem))
+            lock (_lockOperation)
             {
-                if (!existingItem.Equals(cacheItem)) _cacheItems[key] = cacheItem;
-                lruTracker.Remove(key);
-            }
-            else
-            {
-                _cacheItems.Add(key, cacheItem);
-            }
-            lruTracker.AddLast(key);
+                try
+                {
+                    if (!(_cacheItems.TryGetValue(key, out var existingItem) && existingItem.Equals(cacheItem)))
+                    {
+                        _cacheItems.Add(key, cacheItem);
+                    }
+                    UpdateLruList(key);
 
-            if (lruTracker.Count > _capacity)
-            {
-                var keyToRemove = lruTracker.First.Value;
-                lruTracker.RemoveFirst();
-                expiredItem = _cacheItems[keyToRemove];
-                _cacheItems.Remove(keyToRemove);
+                    if (_lruTracker.Count > _capacity)
+                    {
+                        var keyToRemove = _lruTracker.First.Value;
+                        _lruTracker.RemoveFirst();
+                        removedItem = _cacheItems[keyToRemove];
+                        _cacheItems.Remove(keyToRemove);
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Logging and error handling
+                }
             }
         }
 
         public CacheItem<TValue> Get(TKey key)
         {
-            _cacheItems.TryGetValue(key, out var cacheItem);
-            return cacheItem;
+            lock (_lockOperation)
+            {
+                try
+                {
+                    if (_cacheItems.TryGetValue(key, out var cacheItem))
+                        UpdateLruList(key);
+
+                    return cacheItem;
+                }
+                catch (Exception e)
+                {
+                    // Logging and error handling
+                    return null;
+                }
+            }
+        }
+
+        private void UpdateLruList(TKey key)
+        {
+            _lruTracker.Remove(key);
+            _lruTracker.AddLast(key);
         }
     }
 }
